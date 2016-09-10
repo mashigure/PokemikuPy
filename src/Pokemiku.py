@@ -14,8 +14,8 @@ import time
 
 # 描画関連の定数
 WINDOW_TITLE     = 'Game Pad x Poke miku'
-SCREEN_WIDTH     = 320
-SCREEN_HEIGHT    = 240
+SCREEN_WIDTH     = 640
+SCREEN_HEIGHT    = 480
 
 KEYBOARD_TOP     = SCREEN_HEIGHT / 2
 WHITE_HEIGHT     = KEYBOARD_TOP - 20
@@ -75,7 +75,7 @@ w a,w i,w e,w o,N\\,m,N,J,n'''.strip().replace(',','\n').split('\n')
 
 
 # 表示関連 -------------------------------------------------------------------------------------------
-class Poke39PiViewer:
+class PokemikuPyViewer:
 
     def __init__(self):
 
@@ -178,7 +178,7 @@ class Buttons:
 
 
 # ゲームパッド x ポケミク 演奏クラス ----------------------------------------------------------------------
-class Poke39Pi:
+class PokemikuPy:
 
     def __init__(self):
 
@@ -199,7 +199,7 @@ class Poke39Pi:
         self.connect_gamepad = False
         self.connect_midiin  = False
 
-        self.viewer = Poke39PiViewer()
+        self.viewer = PokemikuPyViewer()
             
 
     # Game Padの初期化 -------------------------------------------------------------------------------
@@ -663,7 +663,7 @@ class Poke39Pi:
 # メイン ---------------------------------------------------------------------------------------------
 if  __name__ == '__main__':
     try:
-        Poke39Pi().play()
+        PokemikuPy().play()
     finally:
         pass
 

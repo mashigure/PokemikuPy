@@ -8,7 +8,11 @@ Pokemiku.py
 ポケットミクが音階を歌うPythonスクリプト（プログラム）です。
 ポケットミクとゲームパッド/MIDIキーボードを接続したPCで実行することができます。
 
-[Raspberry Pi内臓ポケミク](http://mashigure.blog.jp/archives/9299520.html)で実行ししているものと同じですので、
+
+![画面のスクリーンショット](img/PokemikuPy.png)
+
+
+[Raspberry Pi内臓ポケミク](http://mashigure.blog.jp/archives/9299520.html)で実行しているものと同じですので、
 どのようなものかはそちらも参考にしてください。
 
 
