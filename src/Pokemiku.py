@@ -196,6 +196,18 @@ class ConfigMng(object):
         if initfile.has_option('GAMEPAD','button_C'):
             self.gemepad_c = initfile.getint('GAMEPAD', 'button_C')
 
+        if initfile.has_option('GAMEPAD','one_up'):
+            self.gemepad_one_up = initfile.getint('GAMEPAD', 'one_up')
+
+        if initfile.has_option('GAMEPAD','oct_up'):
+            self.gemepad_oct_up = initfile.getint('GAMEPAD', 'oct_up')
+
+        if initfile.has_option('GAMEPAD','select'):
+            self.gemepad_select = initfile.getint('GAMEPAD', 'select')
+
+        if initfile.has_option('GAMEPAD','start'):
+            self.gemepad_start = initfile.getint('GAMEPAD', 'start')
+
         self.keyboard_top    = self.screen_height / 2
         self.white_height    = self.keyboard_top - 2
         self.black_height    = self.white_height / 2
@@ -552,10 +564,12 @@ class GamePad:
 		self.b      = False
 		self.a      = False
 		self.x      = False
-		self.oct_up = False
-		self.one_up = False
 		self.start  = False
 		self.select = False
+		self.oct_up = False
+		self.one_up = False
+		self.oct_dn = False
+		self.one_dn = False
 
 
 # ポケミク 演奏クラス ---------------------------------------------------------------------------------
@@ -809,6 +823,11 @@ class PokemikuPy:
                     pygame.midi.Output.write_short(self.midiout, 0xB1, 123, 0)
                     self.viewer.playing_key = []
 
+            # SELECT単独でVibrato
+            else:
+                pygame.midi.Output.write_short(self.midiout, 0xb0, 0x01, 0x7f) # Vibrato ON
+                pygame.midi.Output.write_short(self.midiout, 0xb1, 0x40, 0x7F) # Sustain ON
+
             last.select = True
         
         # START の処理        
@@ -828,6 +847,8 @@ class PokemikuPy:
         
         if (current.select == False) and (last.select == True):
             last.select = False
+            pygame.midi.Output.write_short(self.midiout, 0xb0, 0x01, 0x00) # Vibrato OFF
+            pygame.midi.Output.write_short(self.midiout, 0xb1, 0x40, 0x00) # Sustain OFF
         
         if (current.start == False) and (last.start == True):
             last.start = False
@@ -843,6 +864,8 @@ class PokemikuPy:
         # 演奏用の各ボタンの処理        
         if current.one_up == True: shift += 1
         if current.oct_up == True: shift += 12
+        if current.one_dn == True: shift -= 1
+        if current.oct_dn == True: shift -= 12
 
         if (current.down == True) and (last.down == False):
             self.sent_note_down = 60 + shift
@@ -1261,28 +1284,57 @@ class PokemikuPy:
                     x , y = self.g_pad.get_axis(0), self.g_pad.get_axis(1)
                     if (0.5 < y):
                         btn.down = True
-                        btn.up = False
+                        btn.up   = False
                     elif (y < -0.5):
                         btn.down = False
-                        btn.up = True
+                        btn.up   = True
                     else:
                         btn.down = False
-                        btn.up = False
-                        
+                        btn.up   = False
+
                     if (0.5 < x):
-                        btn.left = False
+                        btn.left  = False
                         btn.right = True
                     elif (x < -0.5):
-                        btn.left = True
+                        btn.left  = True
                         btn.right = False
                     else:
-                        btn.left = False
+                        btn.left  = False
                         btn.right = False
 
-                elif e.type == pygame.locals.JOYBALLMOTION:
-                    print 'ball motion'
+                    z = self.g_pad.get_axis(2)
+                    if z < -0.2:
+                        btn.oct_dn = True
+                        btn.one_dn = False
+                    elif 0.2 < z:
+                        btn.oct_dn = False
+                        btn.one_dn = True
+                        pass
+                    else:
+                        btn.oct_dn = False
+                        btn.one_dn = False
+
                 elif e.type == pygame.locals.JOYHATMOTION:
-                    print 'hat motion'
+                    hat_x, hat_y = self.g_pad.get_hat(0)
+                    if hat_x == -1:
+                        btn.left  = True
+                        btn.right = False
+                    elif hat_x == 1:
+                        btn.left  = False
+                        btn.right = True
+                    else:
+                        btn.left  = False
+                        btn.right = False
+
+                    if hat_y == -1:
+                        btn.up   = False
+                        btn.down = True
+                    elif hat_y == 1:
+                        btn.up   = True
+                        btn.down = False
+                    else:
+                        btn.up   = False
+                        btn.down = False
 
                 elif e.type == pygame.locals.JOYBUTTONDOWN:
                     if   (e.button==self.config.gemepad_b     ): btn.a = True
@@ -1293,7 +1345,7 @@ class PokemikuPy:
                     elif (e.button==self.config.gemepad_oct_up): btn.oct_up = True
                     elif (e.button==self.config.gemepad_select): btn.select = True
                     elif (e.button==self.config.gemepad_start ): btn.start  = True
-                    else: print str(e.button)+'番目のボタンが押された'
+                    else: pass
                 
                 elif e.type == pygame.locals.JOYBUTTONUP:
                     if   (e.button==self.config.gemepad_b     ): btn.a = False
@@ -1304,7 +1356,7 @@ class PokemikuPy:
                     elif (e.button==self.config.gemepad_oct_up): btn.oct_up = False
                     elif (e.button==self.config.gemepad_select): btn.select = False
                     elif (e.button==self.config.gemepad_start ): btn.start  = False
-                    else: print str(e.button)+'番目のボタンが離された'
+                    else: pass
 
             # メインループ脱出コマンド START + SELECT + L + R
             if btn.start and btn.select and btn.one_up and btn.oct_up:
@@ -1331,9 +1383,10 @@ class PokemikuPy:
             self.connect_gamepad = self.init_gamepad()
             ret_value =  self.loopMain()
 
-            # All sound OFF 
-            pygame.midi.Output.write_short(self.midiout, 0xB0, 120, 0)
-            pygame.midi.Output.write_short(self.midiout, 0xB1, 120, 0)
+            pygame.midi.Output.write_short(self.midiout, 0xB0, 120, 0)     # CH1 All sound OFF 
+            pygame.midi.Output.write_short(self.midiout, 0xB1, 120, 0)     # CH2 All sound OFF 
+            pygame.midi.Output.write_short(self.midiout, 0xb0, 0x01, 0x00) # Vibrato OFF
+            pygame.midi.Output.write_short(self.midiout, 0xb1, 0x40, 0x00) # Sustain OFF
 
         return ret_value
 
