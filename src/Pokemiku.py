@@ -1302,17 +1302,18 @@ class PokemikuPy:
                         btn.left  = False
                         btn.right = False
 
-                    z = self.g_pad.get_axis(2)
-                    if z < -0.2:
-                        btn.oct_dn = True
-                        btn.one_dn = False
-                    elif 0.2 < z:
-                        btn.oct_dn = False
-                        btn.one_dn = True
-                        pass
-                    else:
-                        btn.oct_dn = False
-                        btn.one_dn = False
+                    if 2 < self.g_pad.get_numaxes():
+                        z = self.g_pad.get_axis(2)
+                        if z < -0.2:
+                            btn.oct_dn = True
+                            btn.one_dn = False
+                        elif 0.2 < z:
+                            btn.oct_dn = False
+                            btn.one_dn = True
+                            pass
+                        else:
+                            btn.oct_dn = False
+                            btn.one_dn = False
 
                 elif e.type == pygame.locals.JOYHATMOTION:
                     hat_x, hat_y = self.g_pad.get_hat(0)
