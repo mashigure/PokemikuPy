@@ -128,9 +128,12 @@ class ConfigMng(object):
     def __init__(self, conf_file):
 
         # 設定ファイルが見つからなかったときのデフォルト値を適当に設定
+        self.conf_file      = conf_file
         self.screen_width   = 800
         self.screen_height  = 480
         self.is_screen_full = False
+        self.isGamePadConf  = self.isGamepadConf(0)
+        self.isGamePadConf2 = self.isGamepadConf(1)
         self.song_file_1    = ""
         self.song_file_2    = ""
         self.song_file_3    = ""
@@ -139,14 +142,8 @@ class ConfigMng(object):
         self.song_file_6    = ""
         self.song_file_7    = ""
         self.song_file_8    = ""
-        self.gemepad_g      = 3    # ソの音：スーファミで言うYボタン
-        self.gemepad_a      = 1    # ラの音：スーファミで言うBボタン
-        self.gemepad_b      = 0    # シの音：スーファミで言うAボタン
-        self.gemepad_c      = 2    # ドの音：スーファミで言うXボタン
-        self.gemepad_one_up = 4    # 半音UPボタン（L）
-        self.gemepad_oct_up = 5    # オクターブUPボタン（R）
-        self.gemepad_select = 6    # SELECTボタン
-        self.gemepad_start  = 7    # STARTボタン
+
+        self.setGempadXInput()
 
         initfile = ConfigParser.SafeConfigParser()
         initfile.read(conf_file)
@@ -184,35 +181,129 @@ class ConfigMng(object):
         if initfile.has_option('SONG','file8'):
             self.song_file_8 = initfile.get('SONG', 'file8')
 
-        if initfile.has_option('GAMEPAD','button_G'):
-            self.gemepad_g = initfile.getint('GAMEPAD', 'button_G')
-
-        if initfile.has_option('GAMEPAD','button_A'):
-            self.gemepad_a = initfile.getint('GAMEPAD', 'button_A')
-
-        if initfile.has_option('GAMEPAD','button_B'):
-            self.gemepad_b = initfile.getint('GAMEPAD', 'button_B')
-
-        if initfile.has_option('GAMEPAD','button_C'):
-            self.gemepad_c = initfile.getint('GAMEPAD', 'button_C')
-
-        if initfile.has_option('GAMEPAD','one_up'):
-            self.gemepad_one_up = initfile.getint('GAMEPAD', 'one_up')
-
-        if initfile.has_option('GAMEPAD','oct_up'):
-            self.gemepad_oct_up = initfile.getint('GAMEPAD', 'oct_up')
-
-        if initfile.has_option('GAMEPAD','select'):
-            self.gemepad_select = initfile.getint('GAMEPAD', 'select')
-
-        if initfile.has_option('GAMEPAD','start'):
-            self.gemepad_start = initfile.getint('GAMEPAD', 'start')
-
         self.keyboard_top    = self.screen_height / 2
         self.white_height    = self.keyboard_top - 2
         self.black_height    = self.white_height / 2
         self.fontsize_lyrics = self.screen_height * 5 / 13
         self.fontsize_follow = self.screen_height * 2 / 13
+
+    # ゲームパッドのコンフィグが存在するかどうかを確認する -----------------------------------------------
+    def isGamepadConf(self, no=0):
+
+        initfile = ConfigParser.SafeConfigParser()
+        initfile.read(self.conf_file)
+
+        if no == 0:
+            if initfile.has_option('GAMEPAD','button_G') == False:
+                return False
+
+            if initfile.has_option('GAMEPAD','button_A') == False:
+                return False
+
+            if initfile.has_option('GAMEPAD','button_B') == False:
+                return False
+
+            if initfile.has_option('GAMEPAD','button_C') == False:
+                return False
+
+        else:
+            if initfile.has_option('GAMEPAD2','button_G') == False:
+                return False
+
+            if initfile.has_option('GAMEPAD2','button_A') == False:
+                return False
+
+            if initfile.has_option('GAMEPAD2','button_B') == False:
+                return False
+
+            if initfile.has_option('GAMEPAD2','button_C') == False:
+                return False
+
+        return True
+
+    # ゲームパッドのボタン配置をXInputに設定する -------------------------------------------------------
+    def setGempadXInput(self):
+        self.gamepad_g      = 2    # ソの音：スーファミで言うYボタン
+        self.gamepad_a      = 0    # ラの音：スーファミで言うBボタン
+        self.gamepad_b      = 1    # シの音：スーファミで言うAボタン
+        self.gamepad_c      = 3    # ドの音：スーファミで言うXボタン
+        self.gamepad_one_up = 4    # 半音UPボタン（L）
+        self.gamepad_oct_up = 5    # オクターブUPボタン（R）
+        self.gamepad_select = 6    # SELECTボタン
+        self.gamepad_start  = 7    # STARTボタン
+        self.selected_pad   = 0
+
+    # ゲームパッドのボタン配置をBuffalo SNESに設定する -------------------------------------------------
+    def setGempadSNES(self):
+        self.gamepad_g      = 3    # ソの音：スーファミで言うYボタン
+        self.gamepad_a      = 1    # ラの音：スーファミで言うBボタン
+        self.gamepad_b      = 0    # シの音：スーファミで言うAボタン
+        self.gamepad_c      = 2    # ドの音：スーファミで言うXボタン
+        self.gamepad_one_up = 4    # 半音UPボタン（L）
+        self.gamepad_oct_up = 5    # オクターブUPボタン（R）
+        self.gamepad_select = 6    # SELECTボタン
+        self.gamepad_start  = 7    # STARTボタン
+        self.selected_pad   = 1
+
+    # ゲームパッドのボタン配置をConfig.iniをもとに設定する ---------------------------------------------
+    def setGempadByConf(self, no=0):
+
+        initfile = ConfigParser.SafeConfigParser()
+        initfile.read(self.conf_file)
+
+        if no == 0:
+            if initfile.has_option('GAMEPAD','button_G'):
+                self.gamepad_g = initfile.getint('GAMEPAD', 'button_G')
+
+            if initfile.has_option('GAMEPAD','button_A'):
+                self.gamepad_a = initfile.getint('GAMEPAD', 'button_A')
+
+            if initfile.has_option('GAMEPAD','button_B'):
+                self.gamepad_b = initfile.getint('GAMEPAD', 'button_B')
+
+            if initfile.has_option('GAMEPAD','button_C'):
+                self.gamepad_c = initfile.getint('GAMEPAD', 'button_C')
+
+            if initfile.has_option('GAMEPAD','one_up'):
+                self.gamepad_one_up = initfile.getint('GAMEPAD', 'one_up')
+
+            if initfile.has_option('GAMEPAD','oct_up'):
+                self.gamepad_oct_up = initfile.getint('GAMEPAD', 'oct_up')
+
+            if initfile.has_option('GAMEPAD','select'):
+                self.gamepad_select = initfile.getint('GAMEPAD', 'select')
+
+            if initfile.has_option('GAMEPAD','start'):
+                self.gamepad_start = initfile.getint('GAMEPAD', 'start')
+
+            self.selected_pad = 2
+
+        else:
+            if initfile.has_option('GAMEPAD2','button_G'):
+                self.gamepad_g = initfile.getint('GAMEPAD2', 'button_G')
+
+            if initfile.has_option('GAMEPAD2','button_A'):
+                self.gamepad_a = initfile.getint('GAMEPAD2', 'button_A')
+
+            if initfile.has_option('GAMEPAD2','button_B'):
+                self.gamepad_b = initfile.getint('GAMEPAD2', 'button_B')
+
+            if initfile.has_option('GAMEPAD2','button_C'):
+                self.gamepad_c = initfile.getint('GAMEPAD2', 'button_C')
+
+            if initfile.has_option('GAMEPAD2','one_up'):
+                self.gamepad_one_up = initfile.getint('GAMEPAD2', 'one_up')
+
+            if initfile.has_option('GAMEPAD2','oct_up'):
+                self.gamepad_oct_up = initfile.getint('GAMEPAD2', 'oct_up')
+
+            if initfile.has_option('GAMEPAD2','select'):
+                self.gamepad_select = initfile.getint('GAMEPAD2', 'select')
+
+            if initfile.has_option('GAMEPAD2','start'):
+                self.gamepad_start = initfile.getint('GAMEPAD2', 'start')
+
+            self.selected_pad = 3
 
 
 # ボタンクラス ---------------------------------------------------------------------------------------
@@ -320,6 +411,10 @@ class PokemikuPyViewer:
         self.set_Layout1   = Button(130, 55, 110, 36, "img/select.png", 5*36)
         self.set_Layout2   = Button(250, 55, 110, 36, "img/select.png", 6*36)
         self.set_Layout3   = Button(370, 55, 110, 36, "img/select.png", 7*36)
+        self.set_GamePad0  = Button( 10,105, 110, 36, "img/select.png", 8*36)
+        self.set_GamePad1  = Button(130,105, 110, 36, "img/select.png", 9*36)
+        self.set_GamePad2  = Button(250,105, 110, 36, "img/select.png",10*36)
+        self.set_GamePad3  = Button(370,105, 110, 36, "img/select.png",11*36)
         self.mode      = MODE_SNGL
         self.selected  = 0
         self.isTonConf = False
@@ -355,7 +450,9 @@ class PokemikuPyViewer:
 
 
     # 画面の初期化 -----------------------------------------------------------------------------------
-    def initViewer(self, title_text):
+    def initViewer(self, title_text, isConnectGamepad=False):
+
+        self.isGamepad = isConnectGamepad
 
         # 画面を作る
         if self.config.is_screen_full:
@@ -368,7 +465,7 @@ class PokemikuPyViewer:
 
         self.sysfont_lyrics = pygame.font.Font(FONT_FILE, self.config.fontsize_lyrics)
         self.sysfont_follow = pygame.font.Font(FONT_FILE, self.config.fontsize_follow)
-        self.sysfont_text = pygame.font.Font(FONT_FILE, FONT_SIZE_TEXT)
+        self.sysfont_text   = pygame.font.Font(FONT_FILE, FONT_SIZE_TEXT)
 		
 
     # 画面の描画 -------------------------------------------------------------------------------------
@@ -506,6 +603,16 @@ class PokemikuPyViewer:
             self.set_Layout1.view(self.screen, self.key_layout==1)
             self.set_Layout2.view(self.screen, self.key_layout==2)
             self.set_Layout3.view(self.screen, self.key_layout==3)
+
+            if self.isGamepad:
+                self.set_GamePad0.view(self.screen, self.config.selected_pad==0)
+                self.set_GamePad1.view(self.screen, self.config.selected_pad==1)
+
+                if self.config.isGamePadConf:
+                    self.set_GamePad2.view(self.screen, self.config.selected_pad==2)
+
+                if self.config.isGamePadConf2:
+                    self.set_GamePad3.view(self.screen, self.config.selected_pad==3)
 
         # display Surface全体を更新して画面に描写
         pygame.display.flip()
@@ -1174,6 +1281,20 @@ class PokemikuPy:
             elif self.viewer.set_Layout3.check_within(x,y):
                 self.viewer.setLayout(3)
 
+            # Game Pad ボタン設定
+            if self.connect_gamepad:
+                if self.viewer.set_GamePad0.check_within(x,y):
+                    self.config.setGempadXInput()
+
+                elif self.viewer.set_GamePad1.check_within(x,y):
+                    self.config.setGempadSNES()
+
+                elif (self.config.isGamePadConf) and (self.viewer.set_GamePad2.check_within(x,y)):
+                    self.config.setGempadByConf(0)
+
+                elif (self.config.isGamePadConf2) and (self.viewer.set_GamePad3.check_within(x,y)):
+                    self.config.setGempadByConf(1)
+
 
     # 歌詞情報を保存したCSVファイルを読み込んでリスト化 ---------------------------------------------------
     def readSongFile(self, file_name):
@@ -1231,7 +1352,7 @@ class PokemikuPy:
         last_y  = 0
         is_mouse_on = False
 
-        self.viewer.initViewer(WINDOW_TITLE)        
+        self.viewer.initViewer(WINDOW_TITLE, self.connect_gamepad)        
 
         clock = pygame.time.Clock()
         clock.tick(FPS)
@@ -1338,25 +1459,25 @@ class PokemikuPy:
                         btn.down = False
 
                 elif e.type == pygame.locals.JOYBUTTONDOWN:
-                    if   (e.button==self.config.gemepad_b     ): btn.a = True
-                    elif (e.button==self.config.gemepad_a     ): btn.b = True
-                    elif (e.button==self.config.gemepad_c     ): btn.x = True
-                    elif (e.button==self.config.gemepad_g     ): btn.y = True
-                    elif (e.button==self.config.gemepad_one_up): btn.one_up = True
-                    elif (e.button==self.config.gemepad_oct_up): btn.oct_up = True
-                    elif (e.button==self.config.gemepad_select): btn.select = True
-                    elif (e.button==self.config.gemepad_start ): btn.start  = True
+                    if   (e.button==self.config.gamepad_b     ): btn.a = True
+                    elif (e.button==self.config.gamepad_a     ): btn.b = True
+                    elif (e.button==self.config.gamepad_c     ): btn.x = True
+                    elif (e.button==self.config.gamepad_g     ): btn.y = True
+                    elif (e.button==self.config.gamepad_one_up): btn.one_up = True
+                    elif (e.button==self.config.gamepad_oct_up): btn.oct_up = True
+                    elif (e.button==self.config.gamepad_select): btn.select = True
+                    elif (e.button==self.config.gamepad_start ): btn.start  = True
                     else: pass
                 
                 elif e.type == pygame.locals.JOYBUTTONUP:
-                    if   (e.button==self.config.gemepad_b     ): btn.a = False
-                    elif (e.button==self.config.gemepad_a     ): btn.b = False
-                    elif (e.button==self.config.gemepad_c     ): btn.x = False
-                    elif (e.button==self.config.gemepad_g     ): btn.y = False
-                    elif (e.button==self.config.gemepad_one_up): btn.one_up = False
-                    elif (e.button==self.config.gemepad_oct_up): btn.oct_up = False
-                    elif (e.button==self.config.gemepad_select): btn.select = False
-                    elif (e.button==self.config.gemepad_start ): btn.start  = False
+                    if   (e.button==self.config.gamepad_b     ): btn.a = False
+                    elif (e.button==self.config.gamepad_a     ): btn.b = False
+                    elif (e.button==self.config.gamepad_c     ): btn.x = False
+                    elif (e.button==self.config.gamepad_g     ): btn.y = False
+                    elif (e.button==self.config.gamepad_one_up): btn.one_up = False
+                    elif (e.button==self.config.gamepad_oct_up): btn.oct_up = False
+                    elif (e.button==self.config.gamepad_select): btn.select = False
+                    elif (e.button==self.config.gamepad_start ): btn.start  = False
                     else: pass
 
             # メインループ脱出コマンド START + SELECT + L + R
