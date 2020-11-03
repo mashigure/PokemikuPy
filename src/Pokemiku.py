@@ -1,9 +1,3 @@
-#! /usr/bin/env python
-# coding: utf-8
-# coding=utf-8
-# -*- coding: utf-8 -*-
-# vim: fileencoding=utf-8
-
 import pygame
 import pygame.midi
 from pygame.locals import *
@@ -11,7 +5,7 @@ import os
 import codecs
 import time
 import random
-import ConfigParser
+import configparser
 
 
 # 描画関連の定数
@@ -69,7 +63,7 @@ j a,j M,j o
 4\' a,4\' M,4\' o
 w a,w i,w e,w o,N\\,m,N,J,n'''.strip().replace(',','\n').split('\n')
 
-ch_tbl = u'''
+ch_tbl = '''
 あ,い,う,え,お
 か,き,く,け,こ
 が,ぎ,ぐ,げ,ご
@@ -120,7 +114,7 @@ Tinkle Bell,Agogo,Steel Drums,Woodblock,Taiko Drum,Melodic Tom,Synth Drum,Revers
 Guitar Fret Noise,Breath Noise,Seashore,Bird Tweet,Telephone Ring,Helicopter,Applause,Gun Shot'''.strip().replace(',','\n').split('\n')
 
 # Single歌声一覧
-single_sound = [u"ドレミ（♯）",u"ドレミ（♭）",u"ラ",u"て",u"Random"]
+single_sound = ["ドレミ（♯）","ドレミ（♭）","ラ","て","Random"]
 
 # 設定管理クラス -------------------------------------------------------------------------------------
 class ConfigMng(object):
@@ -145,7 +139,7 @@ class ConfigMng(object):
 
         self.setGempadXInput()
 
-        initfile = ConfigParser.SafeConfigParser()
+        initfile = configparser.ConfigParser()
         initfile.read(conf_file)
 
         if initfile.has_option('SCREEN','width'):
@@ -184,13 +178,13 @@ class ConfigMng(object):
         self.keyboard_top    = self.screen_height / 2
         self.white_height    = self.keyboard_top - 2
         self.black_height    = self.white_height / 2
-        self.fontsize_lyrics = self.screen_height * 5 / 13
-        self.fontsize_follow = self.screen_height * 2 / 13
+        self.fontsize_lyrics = int(self.screen_height * 5 / 13)
+        self.fontsize_follow = int(self.screen_height * 2 / 13)
 
     # ゲームパッドのコンフィグが存在するかどうかを確認する -----------------------------------------------
     def isGamepadConf(self, no=0):
 
-        initfile = ConfigParser.SafeConfigParser()
+        initfile = configparser.ConfigParser()
         initfile.read(self.conf_file)
 
         if no == 0:
@@ -248,7 +242,7 @@ class ConfigMng(object):
     # ゲームパッドのボタン配置をConfig.iniをもとに設定する ---------------------------------------------
     def setGempadByConf(self, no=0):
 
-        initfile = ConfigParser.SafeConfigParser()
+        initfile = configparser.ConfigParser()
         initfile.read(self.conf_file)
 
         if no == 0:
@@ -354,8 +348,8 @@ class PokemikuPyViewer:
     def __init__(self, conf_mng):
 
         self.song_title  = single_sound[0]
-        self.disp_str    = u""
-        self.follow_str  = u""
+        self.disp_str    = ""
+        self.follow_str  = ""
         self.playing_key = []
         self.transpose   = 0
         self.follow_key  = -1
@@ -466,7 +460,7 @@ class PokemikuPyViewer:
         self.sysfont_lyrics = pygame.font.Font(FONT_FILE, self.config.fontsize_lyrics)
         self.sysfont_follow = pygame.font.Font(FONT_FILE, self.config.fontsize_follow)
         self.sysfont_text   = pygame.font.Font(FONT_FILE, FONT_SIZE_TEXT)
-		
+
 
     # 画面の描画 -------------------------------------------------------------------------------------
     def view(self):
@@ -655,28 +649,27 @@ class PokemikuPyViewer:
             self.playing_key.remove(key_no)
 
         if len(self.playing_key) == 0:
-            self.disp_str = u""
+            self.disp_str = ""
 
 
 # ゲームパッドのボタン状態を管理する変数群 -------------------------------------------------------------
 class GamePad:
 
     def __init__(self):
-		
-		self.down   = False
-		self.left   = False
-		self.up     = False
-		self.right  = False
-		self.y      = False
-		self.b      = False
-		self.a      = False
-		self.x      = False
-		self.start  = False
-		self.select = False
-		self.oct_up = False
-		self.one_up = False
-		self.oct_dn = False
-		self.one_dn = False
+        self.down   = False
+        self.left   = False
+        self.up     = False
+        self.right  = False
+        self.y      = False
+        self.b      = False
+        self.a      = False
+        self.x      = False
+        self.start  = False
+        self.select = False
+        self.oct_up = False
+        self.one_up = False
+        self.oct_dn = False
+        self.one_dn = False
 
 
 # ポケミク 演奏クラス ---------------------------------------------------------------------------------
@@ -716,12 +709,12 @@ class PokemikuPy:
         try:
             self.g_pad = pygame.joystick.Joystick(0) # create a joystick instance
             self.g_pad.init() # init instance
-            print 'Gamepad Name: ' + self.g_pad.get_name()
-            print 'Button Num  : ' + str(self.g_pad.get_numbuttons())
+            print ('Gamepad Name: ' + self.g_pad.get_name())
+            print ('Button Num  : ' + str(self.g_pad.get_numbuttons()))
             return True
 
         except pygame.error:
-            print 'Gamepad is not found.'
+            print ('Gamepad is not found.')
 
         return False
 
@@ -730,36 +723,36 @@ class PokemikuPy:
     def connectMidiOut(self):
         
         self.flag_pokemiku = False
-    
+
         for i in range(pygame.midi.get_count()):
             interf, name, input, output, opened = pygame.midi.get_device_info(i)
-            
-            if output and name.startswith('eVY1'):
+
+            if output and name.startswith(b'eVY1'):
                 self.midiout = pygame.midi.Output(i)
                 return True
-            
-            if output and name.startswith('NSX-39'):
+
+            if output and name.startswith(b'NSX-39'):
                 self.midiout = pygame.midi.Output(i)
                 self.flag_pokemiku = True
                 return True
 
-        print 'NSX-39/eVY1 is not found.'
+        print ('NSX-39/eVY1 is not found.')
         return False
-                
+
 
     # 入力元となる鍵盤などを探して接続する --------------------------------------------------------------
     def connectMidiIn(self):
-    
+
         for i in range(pygame.midi.get_count()):
             interf, name, input, output, opened = pygame.midi.get_device_info(i)
 
             for keyboard_name in KEYBOARDS:
 
-                if input and name.startswith(keyboard_name):
+                if input and name.startswith(keyboard_name.encode('utf-8')):
                     self.midiin = pygame.midi.Input(i)
                     return True
 
-        print 'MIDI Keyboard is not found.'
+        print ('MIDI Keyboard is not found.')
         return False
         
 
@@ -787,20 +780,20 @@ class PokemikuPy:
         if self.viewer.mode == MODE_SNGL:
             if self.viewer.selected == 0:
                 l_no_list = (50, 50, 114, 114, 101, 95, 95, 25, 25, 111, 111, 32)
-                l_list    = (u"ド", u"♯ド", u"レ", u"♯レ", u"ミ", u"ファ", u"♯ファ", u"ソ", u"♯ソ", u"ラ", u"♯ラ", u"シ")
+                l_list    = ("ド", "♯ド", "レ", "♯レ", "ミ", "ファ", "♯ファ", "ソ", "♯ソ", "ラ", "♯ラ", "シ")
                 lyric_no  = l_no_list[key_no % 12]
                 lyric     = l_list[key_no % 12]
             elif self.viewer.selected == 1:
                 l_no_list = (50, 114, 114, 101, 101, 95, 25, 25, 111, 111, 32, 32)
-                l_list    = (u"ド", u"♭レ", u"レ", u"♭ミ", u"ミ", u"ファ", u"♭ソ", u"ソ", u"♭ラ", u"ラ", u"♭シ", u"シ")
+                l_list    = ("ド", "♭レ", "レ", "♭ミ", "ミ", "ファ", "♭ソ", "ソ", "♭ラ", "ラ", "♭シ", "シ")
                 lyric_no  = l_no_list[key_no % 12]
                 lyric     = l_list[key_no % 12]
             elif self.viewer.selected == 2:
                 lyric_no  = 111
-                lyric     = u"ラ"
+                lyric     = "ラ"
             elif self.viewer.selected == 3:
                 lyric_no  = 44
-                lyric     = u"て"
+                lyric     = "て"
             else:
                 lyric_no  = random.randint(0,122)
                 lyric     = ch_tbl[lyric_no]
@@ -857,7 +850,7 @@ class PokemikuPy:
     # 歌詞を設定するメッセージを送信する ---------------------------------------------------------------
     def set_lyric(self, output, ch):
         
-        output.write_sys_ex( 0, '\xF0\x43\x79\x09\x00\x50\x10' + evy1_ch[ch] + '\x00\xF7')      # for eVY1 
+        output.write_sys_ex(0, b'\xF0\x43\x79\x09\x00\x50\x10' + evy1_ch[ch].encode('utf-8') + b'\x00\xF7')      # for eVY1 
 
         if self.flag_pokemiku:
             output.write_sys_ex( 0, [0xF0, 0x43, 0x79, 0x09, 0x11, 0x0A, 0x00, ch, 0xF7])       # for NSX-39
@@ -895,7 +888,7 @@ class PokemikuPy:
                         pygame.midi.Output.write_short(self.midiout, data[0]+1, data[1], data[2])  # 入力をch2からそのまま出力する
 
 
-	# STARTとSELECTボタンによる特殊操作 ---------------------------------------------------------------
+    # STARTとSELECTボタンによる特殊操作 ---------------------------------------------------------------
     def pushStartSelect(self, current, last):
 
         # SELECT の処理        
@@ -963,7 +956,7 @@ class PokemikuPy:
             pygame.midi.Output.write_short(self.midiout, 0xb1, 0x40, 0x00) # Sustain OFF
 
 
-	# ボタン状態の差（変化）を元に音を鳴らす ------------------------------------------------------------
+    # ボタン状態の差（変化）を元に音を鳴らす ------------------------------------------------------------
     def play_midi_gamepad(self, current, last):
 
         shift = self.transpose
@@ -1055,7 +1048,7 @@ class PokemikuPy:
             self.sent_note_x = 0
 
 
-	# マウス左ボタン押下時に音を鳴らす -----------------------------------------------------------------
+    # マウス左ボタン押下時に音を鳴らす -----------------------------------------------------------------
     def play_midi_mouse_on(self, x, y):
 
         key_no = self.viewer.calcTonleiter(x,y)
@@ -1064,7 +1057,7 @@ class PokemikuPy:
             self.sendNoteOn(key_no)
 
 
-	# マウス左ボタン開放時に音を消す -------------------------------------------------------------------
+    # マウス左ボタン開放時に音を消す -------------------------------------------------------------------
     def play_midi_mouse_off(self, x, y):
 
         key_no  = self.viewer.calcTonleiter(x,y)
@@ -1073,7 +1066,7 @@ class PokemikuPy:
             self.sendNoteOff(key_no)
 
 
-	# マウス左ボタンが押されたまま移動したときに音を変化させる --------------------------------------------
+    # マウス左ボタンが押されたまま移動したときに音を変化させる --------------------------------------------
     def play_midi_mouse_move(self, new_x, new_y, old_x, old_y):
 
         new_key_no  = self.viewer.calcTonleiter(new_x, new_y)
@@ -1088,7 +1081,7 @@ class PokemikuPy:
                 self.sendNoteOn(new_key_no)
 
 
-	# マウス左ボタン押下時に音色等の設定を変更する ------------------------------------------------------
+    # マウス左ボタン押下時に音色等の設定を変更する ------------------------------------------------------
     def change_program_mouse_on(self, x, y):
 
         if self.viewer.ton_conf_btn.check_within(x,y):
@@ -1377,7 +1370,7 @@ class PokemikuPy:
                     pygame.midi.Output.write_short(self.midiout, 0xb1, 0x40, 0x00) # Sustain OFF
 
                 # マウス関連のイベントチェック
-                if (e.type is MOUSEBUTTONDOWN) and (e.button == 1):
+                if (e.type == MOUSEBUTTONDOWN) and (e.button == 1):
                     mouse_x, mouse_y = e.pos
                     self.play_midi_mouse_on(mouse_x, mouse_y)
                     self.change_program_mouse_on(mouse_x, mouse_y)
@@ -1389,11 +1382,11 @@ class PokemikuPy:
                     if self.viewer.restart_btn.check_within(mouse_x, mouse_y):
                         return True
 
-                elif (e.type is MOUSEBUTTONUP) and (e.button == 1):
+                elif (e.type == MOUSEBUTTONUP) and (e.button == 1):
                     self.play_midi_mouse_off(mouse_x, mouse_y)
                     is_mouse_on = False
 
-                elif (e.type is MOUSEMOTION) and (is_mouse_on == True):
+                elif (e.type == MOUSEMOTION) and (is_mouse_on == True):
                     last_x = mouse_x
                     last_y = mouse_y
                     mouse_x, mouse_y = e.pos
@@ -1515,6 +1508,7 @@ class PokemikuPy:
 
 # メイン ---------------------------------------------------------------------------------------------
 if  __name__ == '__main__':
+    print ('Lets start to play Poke-Miku / eVY1.')
     try:
         loop = True
         pygame.init()
