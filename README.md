@@ -29,19 +29,19 @@ Pokemiku.py
 [Buffalo製レトロ調USBゲームパッド](http://buffalo.jp/product/input/gamepad/bsgp801/)を
 想定していますが、その他のゲームパッドでも動作します。ただし、キーコンフィグ（config.ini）の設定変更などが必要です。
 
-※ MIDIキーボード使用の際は、ソースコード38行目のリストに使用するキーボード名を追加して下さい。
+※ MIDIキーボード使用の際は、ソースコード32行目のリストに使用するキーボード名を追加して下さい。
 
 
 ## 動作環境
 
 下記がインストールされ、動作可能なPC上またはディスプレイを接続したRaspberry Pi上
 
-* Python 2.4
+* Python 3.9
 * Pygame
 
 
 ### 確認済み環境
-Windows 10 Pro および Rasbian Stretch(2017/11/29)　上にて動作を確認
+Windows 10 Pro および Rasbian Stretch(2017/11/29) 上にて動作を確認
 
 
 ## 実行方法
